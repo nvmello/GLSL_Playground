@@ -33,13 +33,24 @@ float SmoothNoise2(vec2 uv) {
     return c / 2.0;
 }
 
+vec3 gradient(float t) {
+    vec3 color1 = vec3(0.9, 0.6, 0.8); // light pink
+    vec3 color2 = vec3(1.0, 0.8, 0.9); // cotton candy pink
+    vec3 color3 = vec3(0.6, 0.3, 0.5); // deeper pink/purpl
+    return mix(mix(color1, color2, smoothstep(0.0, 0.5, t)),
+               color3, smoothstep(0.5, 1.0, t));
+}
+
 void main() {
     vec2 uv = gl_FragCoord.xy/resolution;
     
     uv += time * 0.1;
    
     float c = SmoothNoise2(uv);
-    vec3 col = vec3(c);
+    // vec3 col = vec3(c);
+
+    //To add color, create a gradient function, mix the colors, and call the gradient function
+    vec3 col = gradient(c);
     
     gl_FragColor = vec4(col, 1.0);
 }
