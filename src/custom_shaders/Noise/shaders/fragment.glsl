@@ -1,7 +1,7 @@
 precision mediump float;
 
-uniform float time;
-uniform vec2 resolution;
+uniform float u_time;
+uniform vec2 u_resolution;
 
 float N21(vec2 p) {
     return fract(sin(p.x * 100.0 + p.y * 6389.0) * 4012.0);
@@ -42,9 +42,9 @@ vec3 gradient(float t) {
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy/resolution;
+    vec2 uv = gl_FragCoord.xy/u_resolution;
     
-    uv += time * 0.1;
+    uv += u_time * 0.1;
    
     float c = SmoothNoise2(uv);
     // vec3 col = vec3(c);

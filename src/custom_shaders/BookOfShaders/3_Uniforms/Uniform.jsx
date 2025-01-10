@@ -6,60 +6,45 @@ import {
   createProgram,
   createBuffer,
   cleanupWebGL,
-} from "../../utils/webgl";
+} from "../../../utils/webgl";
 
-const Basic_Shader = () => {
-  // ref to store the reference to the canvas element
+/**
+ * https://thebookofshaders.com/03/
+ */
+const Uniform_Shader = () => {
   const canvasRef = useRef(null);
+  const programRef = useRef(null);
+  const timeLocationRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
-  /**
-   * useEffect Hook
-   * Sets up the webGL context and initializes shaders, buffers, and the animation loop.
-   * Runs only once after the component mounts
-   */
   useEffect(() => {
-    /**
-     * Context Setup
-     */
-    //get the canvas element from the ref
     const canvas = canvasRef.current;
 
-    // Initialize the WebGL context for the canvas element
     const gl = canvas.getContext("webgl");
 
-    // if WebGL is not supported, log an error
     if (!gl) {
-      console.log("WebGL Not supported");
+      console.log("webgl not supported");
       return;
     }
 
-    /***********************************************************************/
-
-    /**
-     * Vertex Shader Setup
-     * Transforms 3D coordinates into screen coordinates.
-     */
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 
-    /**
-     * Fragment Shader Setup
-     * Colors the pixels based on some logic
-     */
     const fragmentShader = createShader(
       gl,
       gl.FRAGMENT_SHADER,
       fragmentShaderSource
     );
 
-    /**
-     * Shader Program Setup
-     */
-    const shaderProgram = createProgram(gl, vertexShader, fragmentShader);
+    if (!vertexShader || !fragmentShader) {
+      return;
+    }
 
-    //***************************************************** */
-    /**
-     * Set up Quad vertices and buffer
-     */
+    const shaderProgram = createProgram(gl, vertexShader, fragmentShader);
+    if (!shaderProgram) {
+      return;
+    }
+    programRef.current = shaderProgram;
+
     const vertices = new Float32Array([
       // Positions
       -1, 1, 0.0, -1, -1, 0.0, 1, -1, 0.0, 1, 1, 0.0,
@@ -69,24 +54,27 @@ const Basic_Shader = () => {
       gl,
       vertices,
       3,
-      "a_position",
+      "position",
       shaderProgram
     );
 
-    /**
-     * Render Loop
-     */
+    timeLocationRef.current = gl.getUniformLocation(shaderProgram, "u_time");
+
+    let startTime = performance.now();
     const render = () => {
-      // gl.clear(gl.COLOR_BUFFER_BIT); // Clear the canvas
-      gl.drawArrays(gl.TRIANGLE_FAN, 0, 4); // Draw the quad
-      requestAnimationFrame(render); // Request the next frame
+      const currentTime = (performance.now() - startTime) * 0.001;
+      gl.useProgram(programRef.current);
+      gl.uniform1f(timeLocationRef.current, currentTime);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+      requestAnimationFrame(render);
     };
 
-    render(); // Start the render loop
+    render();
 
     return () => {
-      // Cleanup on component unmount
-
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       cleanupWebGL(gl, {
         buffers: [vertexBuffer],
         programs: [shaderProgram],
@@ -100,4 +88,4 @@ const Basic_Shader = () => {
   );
 };
 
-export default Basic_Shader;
+export default Uniform_Shader;

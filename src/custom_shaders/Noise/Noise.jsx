@@ -70,8 +70,8 @@ const Noise = () => {
     }
 
     // Get uniform locations
-    const timeLocation = gl.getUniformLocation(program, "time");
-    const resolutionLocation = gl.getUniformLocation(program, "resolution");
+    const timeLocation = gl.getUniformLocation(program, "u_time");
+    const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
 
     // Animation loop
     let startTime = performance.now();
