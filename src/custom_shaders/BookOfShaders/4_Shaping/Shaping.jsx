@@ -42,6 +42,14 @@ const Shaping = () => {
       return;
     }
 
+    // setup canvas size
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight;
+    canvas.width = displayWidth;
+    canvas.height = displayHeight;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
     // Create and compile shaders
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     const fragmentShader = createShader(
@@ -104,9 +112,15 @@ const Shaping = () => {
       const currentTime = (performance.now() - startTime) * 0.001; // Convert to seconds
       gl.useProgram(programRef.current);
 
+      // Use the actual canvas dimensions
+      gl.uniform2f(
+        resolutionLocationRef.current,
+        canvas.width, // Using actual width
+        canvas.height // Using actual height
+      );
+
       // Update uniforms
       gl.uniform1f(timeLocationRef.current, currentTime);
-      gl.uniform2f(resolutionLocationRef.current, canvas.width, canvas.height);
 
       // Draw full-screen quad
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
@@ -114,6 +128,14 @@ const Shaping = () => {
       // Continue render loop
       requestAnimationFrame(render);
     };
+
+    const handleResize = () => {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+
+    window.addEventListener("resize", handleResize);
 
     render();
 
