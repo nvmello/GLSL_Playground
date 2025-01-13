@@ -2,7 +2,7 @@
  * Uniform Shader Component
  *
  * This component implements the uniform shader concepts from The Book of Shaders Chapter 3.
- * https://thebookofshaders.com/03/
+ * https://thebookofshaders.com/04/
  *
  * Features:
  * - Basic WebGL setup for shader rendering
@@ -16,8 +16,8 @@
  */
 
 import { useRef, useEffect } from "react";
-import vertexShaderSource from "./shaders/vertex.glsl"; // GLSL code for vertex shader
-import fragmentShaderSource from "./shaders/fragment.glsl"; // GLSL code for fragment shader
+import vertexShaderSource from "./shaders/vertex.glsl";
+import fragmentShaderSource from "./shaders/fragment.glsl";
 import {
   createShader,
   createProgram,
@@ -25,19 +25,20 @@ import {
   cleanupWebGL,
 } from "../../../utils/webgl";
 
-const Uniform_Shader = () => {
+const Shaping = () => {
   // Refs to store WebGL objects and locations
   const canvasRef = useRef(null); // Canvas DOM element
   const programRef = useRef(null); // WebGL program
   const timeLocationRef = useRef(null); // Uniform location for time
+  const resolutionLocationRef = useRef(null); // Uniform location for resolution
 
   useEffect(() => {
-    // Initialize WebGL context
+    // Get WebGL context
     const canvas = canvasRef.current;
     const gl = canvas.getContext("webgl");
 
     if (!gl) {
-      console.log("webgl not supported");
+      console.log("webgl not available");
       return;
     }
 
@@ -55,9 +56,11 @@ const Uniform_Shader = () => {
 
     // Create and link shader program
     const shaderProgram = createProgram(gl, vertexShader, fragmentShader);
+
     if (!shaderProgram) {
       return;
     }
+
     programRef.current = shaderProgram;
 
     // Define vertices for a full-screen quad
@@ -87,16 +90,28 @@ const Uniform_Shader = () => {
       shaderProgram
     );
 
-    // Get uniform location for time
+    // Get uniform locations
     timeLocationRef.current = gl.getUniformLocation(shaderProgram, "u_time");
+    resolutionLocationRef.current = gl.getUniformLocation(
+      shaderProgram,
+      "u_resolution"
+    );
 
-    // Setup render loop with time tracking
+    // Setup render loop
     let startTime = performance.now();
+
     const render = () => {
       const currentTime = (performance.now() - startTime) * 0.001; // Convert to seconds
       gl.useProgram(programRef.current);
+
+      // Update uniforms
       gl.uniform1f(timeLocationRef.current, currentTime);
+      gl.uniform2f(resolutionLocationRef.current, canvas.width, canvas.height);
+
+      // Draw full-screen quad
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+      // Continue render loop
       requestAnimationFrame(render);
     };
 
@@ -117,14 +132,12 @@ const Uniform_Shader = () => {
   );
 };
 
-export default Uniform_Shader;
+export default Shaping;
 
 /* Expected Shader Uniforms:
- * uniform float u_time;    // Time in seconds since start
+ * uniform float u_time;        // Time in seconds since start
+ * uniform vec2 u_resolution;   // Canvas width and height
  *
  * Expected Vertex Attributes:
- * attribute vec3 position; // Vertex position (x, y, z)
- *
- * Note: This implementation follows The Book of Shaders Chapter 3,
- * focusing on uniform variables for shader animation.
+ * attribute vec3 position;     // Vertex position (x, y, z)
  */
